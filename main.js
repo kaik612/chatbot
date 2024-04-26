@@ -2,7 +2,8 @@ const express = require('express');
 const http = require('http');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+app.use(express.json());
+
 
 const apiUrl = 'http://localhost:1234/v1/chat/completions';
 const headers = {
@@ -37,18 +38,20 @@ app.post('/generate-questions', async (req, res) => {
       return res.status(500).json({ error: 'No choices found in the response' });
     }
 
-    const generatedQuestions = data.choices.map(choice => ({
+    const parsableJSONresponse = response.data.choices[0].text(choice => ({
       question: choice.text,
       choices: choice.answers,
       correctAnswer: choice.answer,
       explanation: choice.explanation
     }));
+    const parsedResponse = JSON.parse(parsableJSONresponse)
 
-    return res.json(generatedQuestions);
+    return res.json(parsableJSONresponse);
   } catch (error) {
     console.error('There was a problem with the fetch operation:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
