@@ -1,6 +1,5 @@
 const apiUrl = 'http://localhost:1234/v1/chat/completions';
 
-// Define headers object with Content-Type
 const headers = {
   'Content-Type': 'application/json',
 };
@@ -8,9 +7,9 @@ const headers = {
 async function makeRequest() {
   const requestOptions = {
     method: 'POST',
-    headers: headers, // Use the defined headers object
+    headers: headers,
     body: JSON.stringify({
-      model: 'local-model',
+      model: 'TheBloke/dolphin-2.2.1-mistral-7B-GGUF',
       messages: [
         { "role": "system", "content": "I am an assistant that can answer any question in Japanese, Vietnamese, and English." },
         { "role": "user", "content": "Please generate multiple choice questions in Japanese about anything. Include the questions, four choices for each question, the correct answer, and an explanation for the correct answer. Return the response in JSON format, write me in Japanese" }
@@ -28,29 +27,23 @@ async function makeRequest() {
     }
 
     const data = await response.json();
-    console.log(data);
-
-    // Check if the data object contains the 'choices' property
-  if (!data.choices || !Array.isArray(data.choices) || data.choices.length === 0) {
-    console.error('No choices found in the response.');
+    console.log('Response data:', data); // Log the response data
+    if (!data.choices || data.choices.length === 0) {
+      console.error('No choices found in the response.');
       return null;
     }
-    
-    // Parse the response data and extract the generated questions
+
     const generatedQuestions = data.choices.map(choice => ({
       question: choice.text,
       choices: choice.answers,
       correctAnswer: choice.answer,
       explanation: choice.explanation
     }));
-    
-    // Format the questions into JSON
-    const formattedQuestions = JSON.stringify(generatedQuestions, null, 2);
-    
-    return formattedQuestions; // Return the formatted JSON string
+
+    return JSON.stringify(generatedQuestions, null, 2);
   } catch (error) {
     console.error('There was a problem with the fetch operation:', error);
-    return null; // Return null if there was an error
+    return null;
   }
 }
 
@@ -58,8 +51,8 @@ async function getGeneratedQuestions() {
   try {
     const questionsJSON = await makeRequest();
     if (questionsJSON) {
-      console.log(questionsJSON); // Log the formatted JSON string
-      return questionsJSON; // Return the formatted JSON string
+      console.log(questionsJSON);
+      return questionsJSON;
     } else {
       console.error('Failed to fetch generated questions.');
       return null;
